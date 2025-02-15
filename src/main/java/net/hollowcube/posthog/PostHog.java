@@ -130,7 +130,7 @@ public final class PostHog {
     }
 
     /**
-     * Assign the given properties to the given group (type & key).
+     * Assign the given properties to the given group (type &amp; key).
      *
      * @param type Group type. Must not be empty
      * @param key Group key. Must not be empty
@@ -141,7 +141,7 @@ public final class PostHog {
     }
 
     /**
-     * Assign the given properties to the given group (type & key).
+     * Assign the given properties to the given group (type &amp; key).
      *
      * <p>The object must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
