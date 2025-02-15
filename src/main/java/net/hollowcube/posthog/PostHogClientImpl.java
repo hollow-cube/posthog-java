@@ -1,9 +1,6 @@
 package net.hollowcube.posthog;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -131,6 +128,7 @@ public final class PostHogClientImpl implements PostHogClient {
         }
         eventData.add("properties", eventProps);
 
+        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(eventData));
         this.queue.enqueue(eventData);
     }
 
@@ -404,7 +402,8 @@ public final class PostHogClientImpl implements PostHogClient {
 
         JsonObject stackTrace = new JsonObject();
         stackTrace.add("frames", getStackFrames(exc.getStackTrace()));
-//        exception.add("stacktrace", stackTrace);
+        stackTrace.addProperty("type", "raw");
+        exception.add("stacktrace", stackTrace);
 
         return exception;
     }
@@ -419,13 +418,27 @@ public final class PostHogClientImpl implements PostHogClient {
             if (element == null) continue;
 
             final JsonObject frame = new JsonObject();
+            // We lie and tell PostHog that this is a Python exception because they don't actually support
+            // Java yet :) As far as i can tell this is only actually used for syntax highlighting in source
+            // code (which we don't send) so this is probably OK for now.
+            frame.addProperty("platform", "python");
+            frame.addProperty("filename", element.getFileName());
+            frame.addProperty("abs_path", element.getFileName());
+
             frame.addProperty("module", element.getClassName());
             frame.addProperty("function", element.getMethodName());
+
             // Protocol doesn't accept negative line numbers.
             // The runtime seem to use -2 as a way to signal a native method
             if (element.getLineNumber() >= 0)
                 frame.addProperty("lineno", element.getLineNumber());
-            frame.addProperty("native", element.isNativeMethod());
+
+            // The following is required but we don't have this info in Java
+            frame.add("pre_context", new JsonArray());
+            frame.add("context_line", JsonNull.INSTANCE);
+            frame.add("post_context", new JsonArray());
+            frame.addProperty("in_app", true);
+
             stackFrames.add(frame);
         }
         return stackFrames;
