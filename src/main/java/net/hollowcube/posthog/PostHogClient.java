@@ -144,6 +144,36 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     }
 
     /**
+     * Assign the given properties to the given group (type & key).
+     *
+     * @param type Group type. Must not be empty
+     * @param key Group key. Must not be empty
+     * @param properties Properties to set (including overwriting previous values) on the group
+     */
+    default void groupIdentify(@NotNull String type, @NotNull String key, @NotNull Map<String, Object> properties) {
+        groupIdentify(type, key, (Object) properties);
+    }
+
+    /**
+     * Assign the given properties to the given group (type & key).
+     *
+     * <p>The object must be serializable to a JSON object via Gson (not primitive or array)</p>
+     *
+     * @param type Group type. Must not be empty
+     * @param key Group key. Must not be empty
+     * @param properties Properties to set (including overwriting previous values) on the group
+     */
+    default void groupIdentify(@NotNull String type, @NotNull String key, @NotNull Object properties) {
+        Map<String, Object> eventProps = new HashMap<>();
+        eventProps.put(GROUP_TYPE, nonNullNonEmpty("type", type));
+        eventProps.put(GROUP_KEY, nonNullNonEmpty("key", key));
+        eventProps.put(GROUP_SET, Objects.requireNonNull(properties));
+
+        final String distinctId = String.format("%s_%s", type, key);
+        capture(distinctId, GROUP_IDENTIFY, eventProps);
+    }
+
+    /**
      * Queue an immediate flush of the pending event queue. This call does not block on the flush to be completed.
      */
     void flush();

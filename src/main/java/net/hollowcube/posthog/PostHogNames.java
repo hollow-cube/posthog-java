@@ -15,7 +15,7 @@ public final class PostHogNames {
     public static final String PROCESS_PERSON_PROFILE = "$process_person_profile";
 
     public static final String GROUP = "$group";
-    public static final String GROUPs = "$groups";
+    public static final String GROUPS = "$groups";
     public static final String GROUP_IDENTIFY = "$groupidentify";
     public static final String GROUP_TYPE = "$group_type";
     public static final String GROUP_KEY = "$groupkey";

@@ -12,6 +12,10 @@ import java.util.function.Function;
 public final class PostHog {
     private static PostHogClient client = PostHogClientNoop.INSTANCE;
 
+    public static void init(@NotNull String projectApiKey) {
+        init(projectApiKey, Function.identity());
+    }
+
     public static void init(@NotNull String projectApiKey, @NotNull Function<PostHogClient.Builder, PostHogClient.Builder> builderFunc) {
         if (client != PostHogClientNoop.INSTANCE)
             throw new IllegalStateException("PostHog client already initialized");
@@ -20,6 +24,11 @@ public final class PostHog {
 
     public static @NotNull PostHogClient getClient() {
         return Objects.requireNonNull(client, "PostHog client not initialized");
+    }
+
+    @Blocking
+    public static void shutdown() {
+        shutdown(Duration.ofSeconds(10));
     }
 
     @Blocking
@@ -121,6 +130,30 @@ public final class PostHog {
     }
 
     /**
+     * Assign the given properties to the given group (type & key).
+     *
+     * @param type Group type. Must not be empty
+     * @param key Group key. Must not be empty
+     * @param properties Properties to set (including overwriting previous values) on the group
+     */
+    public static void groupIdentify(@NotNull String type, @NotNull String key, @NotNull Map<String, Object> properties) {
+        getClient().groupIdentify(type, key, properties);
+    }
+
+    /**
+     * Assign the given properties to the given group (type & key).
+     *
+     * <p>The object must be serializable to a JSON object via Gson (not primitive or array)</p>
+     *
+     * @param type Group type. Must not be empty
+     * @param key Group key. Must not be empty
+     * @param properties Properties to set (including overwriting previous values) on the group
+     */
+    public static void groupIdentify(@NotNull String type, @NotNull String key, @NotNull Object properties) {
+        getClient().groupIdentify(type, key, properties);
+    }
+
+    /**
      * Queue an immediate flush of the pending event queue. This call does not block on the flush to be completed.
      */
     public static void flush() {
@@ -208,5 +241,24 @@ public final class PostHog {
     public static void reloadFeatureFlags() {
         getClient().reloadFeatureFlags();
     }
+
+    // Exceptions
+
+    public static void captureException(@NotNull Throwable throwable) {
+        getClient().captureException(throwable);
+    }
+
+    public static void captureException(@NotNull Throwable throwable, @NotNull String distinctId) {
+        getClient().captureException(throwable, distinctId);
+    }
+
+    public static void captureException(@NotNull Throwable throwable, @NotNull String distinctId, @NotNull Map<String, Object> properties) {
+        getClient().captureException(throwable, distinctId, properties);
+    }
+
+    public static void captureException(@NotNull Throwable throwable, @Nullable String distinctId, @Nullable Object properties) {
+        getClient().captureException(throwable, distinctId, properties);
+    }
+
 
 }
