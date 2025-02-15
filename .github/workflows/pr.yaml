@@ -3,6 +3,7 @@ on: [ pull_request ]
 jobs:
   build_pr:
     name: Build & Test PR
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
