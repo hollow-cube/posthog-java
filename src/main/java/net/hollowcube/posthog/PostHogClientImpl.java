@@ -128,7 +128,6 @@ public final class PostHogClientImpl implements PostHogClient {
         }
         eventData.add("properties", eventProps);
 
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(eventData));
         this.queue.enqueue(eventData);
     }
 
