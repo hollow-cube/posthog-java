@@ -387,7 +387,7 @@ public final class PostHogClientImpl implements PostHogClient {
         final JsonObject exception = new JsonObject();
         exception.addProperty("type", exc.getClass().getSimpleName());
         exception.addProperty("module", exc.getClass().getPackageName());
-        exception.addProperty("value", exc.getMessage());
+        exception.addProperty("value", Objects.requireNonNullElse(exc.getMessage(), ""));
 
         JsonObject mechanism = new JsonObject();
         mechanism.addProperty("type", "generic");
