@@ -120,6 +120,52 @@ public final class PostHog {
     }
 
     /**
+     * Set the given properties with the person profile of the user (distinct id).
+     *
+     * @param distinctId Unique ID of the target in your database. May not be empty.
+     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param propertiesSetOnce Properties to set only if missing on the person profile
+     */
+    public static void set(@NotNull String distinctId, @Nullable Map<String, Object> properties, @Nullable Map<String, Object> propertiesSetOnce) {
+        getClient().set(distinctId, properties, propertiesSetOnce);
+    }
+
+    /**
+     * Set the given properties with the person profile of the user (distinct id).
+     *
+     * <p>The objects must be serializable to a JSON object via Gson (not primitive or array)</p>
+     *
+     * @param distinctId Unique ID of the target in your database. May not be empty.
+     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param propertiesSetOnce Properties to set only if missing on the person profile
+     */
+    public static void set(@NotNull String distinctId, @Nullable Object properties, @Nullable Object propertiesSetOnce) {
+        getClient().set(distinctId, properties, propertiesSetOnce);
+    }
+
+    /**
+     * Set the given properties with the person profile of the user (distinct id).
+     *
+     * @param distinctId Unique ID of the target in your database. May not be empty.
+     * @param properties Properties to set (including overwriting previous values) on the person profile
+     */
+    public static void set(@NotNull String distinctId, @Nullable Map<String, Object> properties) {
+        getClient().set(distinctId, properties);
+    }
+
+    /**
+     * Set the given properties with the person profile of the user (distinct id).
+     *
+     * <p>The object must be serializable to a JSON object via Gson (not primitive or array)</p>
+     *
+     * @param distinctId Unique ID of the target in your database. May not be empty.
+     * @param properties Properties to set (including overwriting previous values) on the person profile
+     */
+    public static void set(@NotNull String distinctId, @Nullable Object properties) {
+        getClient().set(distinctId, properties);
+    }
+
+    /**
      * Alias the given distinct ID to the given alias.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
