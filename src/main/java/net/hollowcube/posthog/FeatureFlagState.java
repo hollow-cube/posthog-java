@@ -13,6 +13,7 @@ public final class FeatureFlagState {
 
     private final boolean enabled;
     private final String variant;
+    private final String payload;
     private final String inconclusiveReason;
 
     FeatureFlagState(boolean enabled) {
@@ -22,20 +23,31 @@ public final class FeatureFlagState {
     FeatureFlagState(boolean enabled, @Nullable String variant, @Nullable String inconclusiveReason) {
         this.enabled = enabled;
         this.variant = variant;
+        this.payload = null;
         this.inconclusiveReason = inconclusiveReason;
     }
 
-    FeatureFlagState(@Nullable JsonObject featureFlags, @NotNull String key) {
+    FeatureFlagState(@Nullable JsonObject featureFlags, @Nullable JsonObject featureFlagPayloads, @NotNull String key) {
         this.inconclusiveReason = null;
 
         if (featureFlags == null || !featureFlags.has(key) || !(featureFlags.get(key) instanceof JsonPrimitive value)) {
             this.enabled = false;
             this.variant = null;
+            this.payload = null;
             return;
         }
 
         this.enabled = value.isString() || value.getAsBoolean();
         this.variant = value.isString() ? value.getAsString() : null;
+        this.payload = featureFlagPayloads != null && featureFlagPayloads.has(key)
+                ? featureFlagPayloads.get(key).getAsString() : null;
+    }
+    
+    FeatureFlagState(@NotNull FeatureFlagState other, @Nullable String payload) {
+        this.enabled = other.enabled;
+        this.variant = other.variant;
+        this.payload = payload;
+        this.inconclusiveReason = other.inconclusiveReason;
     }
 
     /**
@@ -52,6 +64,15 @@ public final class FeatureFlagState {
      */
     public @Nullable String getVariant() {
         return this.variant;
+    }
+
+    /**
+     * Returns the payload of the feature flag if it is enabled and has a payload, null otherwise.
+     *
+     * <p>Note that a feature flag which is enabled but has no payload will return null</p>
+     */
+    public @Nullable String getPayload() {
+        return this.payload;
     }
 
     public boolean isInconclusive() {

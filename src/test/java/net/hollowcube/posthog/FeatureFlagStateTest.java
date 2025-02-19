@@ -11,7 +11,7 @@ public class FeatureFlagStateTest {
 
     @Test
     void emptyObject() {
-        var state = new FeatureFlagState(new JsonObject(), "test");
+        var state = new FeatureFlagState(new JsonObject(), new JsonObject(), "test");
         assertFalse(state.isEnabled());
         assertNull(state.getVariant());
     }
@@ -20,7 +20,7 @@ public class FeatureFlagStateTest {
     void presentFalse() {
         var json = new JsonObject();
         json.addProperty("test", false);
-        var state = new FeatureFlagState(json, "test");
+        var state = new FeatureFlagState(json, new JsonObject(), "test");
         assertFalse(state.isEnabled());
         assertNull(state.getVariant());
     }
@@ -29,7 +29,7 @@ public class FeatureFlagStateTest {
     void presentTrue() {
         var json = new JsonObject();
         json.addProperty("test", true);
-        var state = new FeatureFlagState(json, "test");
+        var state = new FeatureFlagState(json, new JsonObject(), "test");
         assertTrue(state.isEnabled());
         assertNull(state.getVariant());
     }
@@ -38,7 +38,7 @@ public class FeatureFlagStateTest {
     void presentString() {
         var json = new JsonObject();
         json.addProperty("test", "variant");
-        var state = new FeatureFlagState(json, "test");
+        var state = new FeatureFlagState(json, new JsonObject(), "test");
         assertTrue(state.isEnabled());
         assertEquals("variant", state.getVariant());
     }
@@ -47,7 +47,7 @@ public class FeatureFlagStateTest {
     void presentOtherA() {
         var json = new JsonObject();
         json.addProperty("test", 1);
-        var state = new FeatureFlagState(json, "test");
+        var state = new FeatureFlagState(json, new JsonObject(), "test");
         assertFalse(state.isEnabled());
         assertNull(state.getVariant());
     }
@@ -56,7 +56,7 @@ public class FeatureFlagStateTest {
     void presentOtherB() {
         var json = new JsonObject();
         json.add("test", new JsonObject());
-        var state = new FeatureFlagState(json, "test");
+        var state = new FeatureFlagState(json, new JsonObject(), "test");
         assertFalse(state.isEnabled());
         assertNull(state.getVariant());
     }
@@ -65,7 +65,7 @@ public class FeatureFlagStateTest {
     void presentOtherC() {
         var json = new JsonObject();
         json.add("test", new JsonArray());
-        var state = new FeatureFlagState(json, "test");
+        var state = new FeatureFlagState(json, new JsonObject(), "test");
         assertFalse(state.isEnabled());
         assertNull(state.getVariant());
     }
@@ -74,7 +74,7 @@ public class FeatureFlagStateTest {
     void presentOtherD() {
         var json = new JsonObject();
         json.add("test", JsonNull.INSTANCE);
-        var state = new FeatureFlagState(json, "test");
+        var state = new FeatureFlagState(json, new JsonObject(), "test");
         assertFalse(state.isEnabled());
         assertNull(state.getVariant());
     }

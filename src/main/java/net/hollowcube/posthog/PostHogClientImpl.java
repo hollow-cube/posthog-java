@@ -169,8 +169,9 @@ public final class PostHogClientImpl implements PostHogClient {
                 : this.allowRemoteFeatureFlagEvaluation;
 
         // If we have local flags and this flag can be evaluated locally always prioritize that
-        FeatureFlagState result = REMOTE_EVAL_NOT_ALLOWED;
+        FeatureFlagState result = null;
         if (this.featureFlags != null) {
+            result = REMOTE_EVAL_NOT_ALLOWED;
             final FeatureFlagsResponse.Flag flag = this.featureFlags.get(featureFlagKey);
             if (flag != null) {
                 result = evaluateFeatureFlag(this.gson, flag, distinctId, featureFlagContext);
@@ -179,11 +180,13 @@ public final class PostHogClientImpl implements PostHogClient {
 
         // If we are allowed to eval remotely and did not get a conclusive result when doing
         // local evaluation then we should try remote evaluation.
-        if (allowRemoteEval && result.isInconclusive()) {
+        if (allowRemoteEval && (result == null || result.isInconclusive())) {
             try {
-                final JsonObject featureFlags = this.decide(distinctId, featureFlagContext)
-                        .getAsJsonObject("featureFlags");
-                result = new FeatureFlagState(featureFlags, featureFlagKey);
+                final JsonObject response = this.decide(distinctId, featureFlagContext);
+                final JsonObject featureFlags = response.getAsJsonObject("featureFlags");
+                final JsonObject featureFlagPayloads = response.has("featureFlagPayloads") ?
+                        response.getAsJsonObject("featureFlagPayloads") : new JsonObject();
+                result = new FeatureFlagState(featureFlags, featureFlagPayloads, featureFlagKey);
             } catch (InterruptedException ignored) {
                 result = FeatureFlagState.DISABLED;
             }
@@ -212,9 +215,10 @@ public final class PostHogClientImpl implements PostHogClient {
                 : this.allowRemoteFeatureFlagEvaluation;
 
         // First try to evaluate all of the flags locally
-        boolean needsLocalEvaluation = false;
+        boolean needsLocalEvaluation = true;
         final Map<String, FeatureFlagState> result = new HashMap<>();
         if (this.featureFlags != null) {
+            needsLocalEvaluation = false;
             for (final FeatureFlagsResponse.Flag flag : this.featureFlags.values()) {
                 final FeatureFlagState state = evaluateFeatureFlag(this.gson, flag, distinctId, featureFlagContext);
                 result.put(flag.key(), state);
@@ -234,12 +238,14 @@ public final class PostHogClientImpl implements PostHogClient {
 
         // Evaluate the feature flags remotely
         try {
-            final JsonObject featureFlags = this.decide(distinctId, featureFlagContext)
-                    .getAsJsonObject("featureFlags");
+            final JsonObject response = this.decide(distinctId, featureFlagContext);
+            final JsonObject featureFlags = response.getAsJsonObject("featureFlags");
+            final JsonObject featureFlagsPayloads = response.has("featureFlagPayloads") ?
+                    response.getAsJsonObject("featureFlagPayloads") : new JsonObject();
             final HashMap<String, FeatureFlagState> states = new HashMap<>();
             if (featureFlags != null) {
                 for (String key : featureFlags.keySet())
-                    states.put(key, new FeatureFlagState(featureFlags, key));
+                    states.put(key, new FeatureFlagState(featureFlags, featureFlagsPayloads, key));
             }
             return new FeatureFlagStates(states);
         } catch (InterruptedException ignored) {

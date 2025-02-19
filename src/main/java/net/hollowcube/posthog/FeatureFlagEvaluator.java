@@ -12,10 +12,7 @@ import org.jetbrains.annotations.TestOnly;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -72,7 +69,10 @@ final class FeatureFlagEvaluator {
                     return new FeatureFlagState(true, variantOverride, null);
                 }
 
-                return getMatchingVariant(flag, distinctId);
+                final FeatureFlagState result = getMatchingVariant(flag, distinctId);
+                final String payload = flag.filters().payloads().get(Objects.requireNonNullElse(result.getVariant(), String.valueOf(result.isEnabled())));
+                if (payload != null) return new FeatureFlagState(result, payload);
+                return result;
             }
         }
 

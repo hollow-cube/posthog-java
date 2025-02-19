@@ -281,7 +281,28 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      */
     @NotNull FeatureFlagState getFeatureFlag(@NotNull String key, @NotNull String distinctId, @Nullable FeatureFlagContext context);
 
-    // TODO: getFeatureFlagPayload
+    /**
+     * Get the feature flag payload for the given distinct ID.
+     *
+     * @param key Feature flag key
+     * @param distinctId Unique ID of the target in your database. May not be empty
+     * @return Feature flag payload, or null if the feature flag is disabled <i>or</i> has no payload configured.
+     */
+    default @Nullable String getFeatureFlagPayload(@NotNull String key, @NotNull String distinctId) {
+        return getFeatureFlag(key, distinctId, null).getPayload();
+    }
+
+    /**
+     * Get the feature flag payload for the given distinct ID.
+     *
+     * @param key Feature flag key
+     * @param distinctId Unique ID of the target in your database. May not be empty
+     * @param context Extra context to pass to the feature flag evaluation
+     * @return Feature flag payload, or null if the feature flag is disabled <i>or</i> has no payload configured.
+     */
+    default @Nullable String getFeatureFlagPayload(@NotNull String key, @NotNull String distinctId, @Nullable FeatureFlagContext context) {
+        return getFeatureFlag(key, distinctId, context).getPayload();
+    }
 
     /**
      * Get all feature flags for the given distinct ID.
