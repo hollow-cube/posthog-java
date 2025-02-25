@@ -21,6 +21,9 @@ public final class PostHogNames {
     public static final String GROUP_KEY = "$groupkey";
     public static final String GROUP_SET = "$group_set";
 
+    public static final String LIB = "$lib";
+    public static final String LIB_VERSION = "$lib_version";
+
     // This group is typically autocaptured by other SDKs, see here
     // https://posthog.com/docs/product-analytics/autocapture
     public static final String AUTO_CAPTURE = "$autocapture";
