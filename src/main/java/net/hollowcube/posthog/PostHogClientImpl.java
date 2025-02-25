@@ -25,9 +25,9 @@ import static net.hollowcube.posthog.FeatureFlagState.REMOTE_EVAL_NOT_ALLOWED;
 import static net.hollowcube.posthog.PostHogNames.*;
 
 public final class PostHogClientImpl implements PostHogClient {
-    private static final String LIBRARY_NAME = "github.com/hollow-cube/posthog-java";
-    private static final String LIBRARY_VERSION = "1.0.0";
-    private static final String USER_AGENT = String.format("%s/%s", LIBRARY_NAME, LIBRARY_VERSION);
+    private static final String DEFAULT_LIBRARY_NAME = "github.com/hollow-cube/posthog-java";
+    private static final String DEFAULT_LIBRARY_VERSION = "1.0.0";
+    private static final String USER_AGENT = String.format("%s/%s", DEFAULT_LIBRARY_NAME, DEFAULT_LIBRARY_VERSION);
     private static final int STACKTRACE_FRAME_LIMIT = 100;
 
     private static final Logger log = LoggerFactory.getLogger(PostHogClientImpl.class);
@@ -75,8 +75,8 @@ public final class PostHogClientImpl implements PostHogClient {
         this.personalApiKey = personalApiKey;
 
         this.defaultEventProperties = gson.toJsonTree(defaultEventProperties).getAsJsonObject();
-        this.defaultEventProperties.addProperty("$lib", LIBRARY_NAME);
-        this.defaultEventProperties.addProperty("$lib_version", LIBRARY_VERSION);
+        this.setPropertyIfAbsent(this.defaultEventProperties, LIB, DEFAULT_LIBRARY_NAME);
+        this.setPropertyIfAbsent(this.defaultEventProperties, LIB_VERSION, DEFAULT_LIBRARY_VERSION);
         this.eventBatchTimeout = eventBatchTimeout;
 
         // Always enable local evaluation with personal api key.
@@ -447,5 +447,11 @@ public final class PostHogClientImpl implements PostHogClient {
             stackFrames.add(frame);
         }
         return stackFrames;
+    }
+
+    private void setPropertyIfAbsent(@NotNull JsonObject object, @NotNull String key, @NotNull String value) {
+        if (!object.has(key)) {
+            object.addProperty(key, value);
+        }
     }
 }
