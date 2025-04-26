@@ -3,6 +3,7 @@ package net.hollowcube.posthog;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +13,8 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import static net.hollowcube.posthog.PostHogNames.*;
 
@@ -368,6 +371,8 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
         private Duration featureFlagsPollingInterval = Duration.ofMinutes(5);
         private Duration featureFlagsRequestTimeout = Duration.ofSeconds(3);
 
+        private BiFunction<Throwable, JsonObject, Boolean> exceptionMiddleware = null;
+
         private Gson gson = null; // Set on build if not overridden
 
         private Builder(@NotNull String projectApiKey) {
@@ -440,6 +445,12 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
             return this;
         }
 
+        @Contract(pure = true)
+        public @NotNull Builder exceptionMiddleware(@NotNull BiFunction<Throwable, JsonObject, Boolean> exceptionMiddleware) {
+            this.exceptionMiddleware = Objects.requireNonNull(exceptionMiddleware);
+            return this;
+        }
+
         /**
          * Allows overriding the {@link Gson} instance used for de/serializing events.
          * Can be useful for handling custom types.
@@ -465,7 +476,8 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
                     flushInterval, maxBatchSize, defaultEventProperties, // Events
                     eventBatchTimeout,
                     allowRemoteFeatureFlagEvaluation, sendFeatureFlagEvents, // Feature flags
-                    featureFlagsPollingInterval, featureFlagsRequestTimeout
+                    featureFlagsPollingInterval, featureFlagsRequestTimeout,
+                    exceptionMiddleware // Exceptions
             );
         }
     }

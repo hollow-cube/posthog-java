@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 import static net.hollowcube.posthog.FeatureFlagEvaluator.evaluateFeatureFlag;
 import static net.hollowcube.posthog.FeatureFlagState.REMOTE_EVAL_NOT_ALLOWED;
@@ -50,6 +51,8 @@ public final class PostHogClientImpl implements PostHogClient {
     private final boolean sendFeatureFlagEvents;
     private final Duration featureFlagsRequestTimeout;
 
+    private final BiFunction<Throwable, JsonObject, Boolean> exceptionMiddleware;
+
     PostHogClientImpl(
             @NotNull Gson gson,
 
@@ -65,7 +68,8 @@ public final class PostHogClientImpl implements PostHogClient {
             boolean allowRemoteFeatureFlagEvaluation,
             boolean sendFeatureFlagEvents,
             @NotNull Duration featureFlagsPollingInterval,
-            @NotNull Duration featureFlagsRequestTimeout
+            @NotNull Duration featureFlagsRequestTimeout,
+            @Nullable BiFunction<Throwable, JsonObject, Boolean> exceptionMiddleware
     ) {
         this.queue = new EventQueue(this::sendEventBatch, flushInterval, maxBatchSize);
         this.gson = gson;
@@ -88,6 +92,8 @@ public final class PostHogClientImpl implements PostHogClient {
         this.allowRemoteFeatureFlagEvaluation = allowRemoteFeatureFlagEvaluation;
         this.sendFeatureFlagEvents = sendFeatureFlagEvents;
         this.featureFlagsRequestTimeout = featureFlagsRequestTimeout;
+
+        this.exceptionMiddleware = exceptionMiddleware;
     }
 
     @Override
@@ -345,7 +351,6 @@ public final class PostHogClientImpl implements PostHogClient {
 
     // Exceptions
 
-
     @Override
     public void captureException(@NotNull Throwable throwable, @Nullable String distinctId, @Nullable Object properties) {
         // this function shouldn't ever throw an error, so it logs exceptions instead of allowing them to propagate.
@@ -366,6 +371,9 @@ public final class PostHogClientImpl implements PostHogClient {
             eventProps.add(EXCEPTION_LIST, buildExceptionList(throwable));
             eventProps.addProperty(EXCEPTION_PERSON_URL, String.format("%s/project/%s/person/%s",
                     endpoint, projectApiKey, distinctId));
+
+            if (exceptionMiddleware != null && !exceptionMiddleware.apply(throwable, eventProps))
+                return;
 
             capture(distinctId, EXCEPTION, eventProps);
         } catch (Exception e) {
@@ -426,7 +434,7 @@ public final class PostHogClientImpl implements PostHogClient {
             // We lie and tell PostHog that this is a Python exception because they don't actually support
             // Java yet :) As far as i can tell this is only actually used for syntax highlighting in source
             // code (which we don't send) so this is probably OK for now.
-            frame.addProperty("platform", "python");
+            frame.addProperty("platform", "java");
             frame.addProperty("filename", element.getFileName());
             frame.addProperty("abs_path", element.getFileName());
 
