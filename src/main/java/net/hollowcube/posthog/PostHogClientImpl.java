@@ -434,8 +434,11 @@ public final class PostHogClientImpl implements PostHogClient {
             // We lie and tell PostHog that this is a Python exception because they don't actually support
             // Java yet :) As far as i can tell this is only actually used for syntax highlighting in source
             // code (which we don't send) so this is probably OK for now.
-            frame.addProperty("platform", "java");
-            frame.addProperty("filename", element.getFileName());
+            frame.addProperty("platform", "python");
+            var fileName = element.getClassName();
+            if (element.getModuleName() != null)
+                fileName = element.getModuleName() + "/" + fileName;
+            frame.addProperty("filename", fileName);
             frame.addProperty("abs_path", element.getFileName());
 
             frame.addProperty("module", element.getClassName());
@@ -450,7 +453,9 @@ public final class PostHogClientImpl implements PostHogClient {
             frame.add("pre_context", new JsonArray());
             frame.add("context_line", JsonNull.INSTANCE);
             frame.add("post_context", new JsonArray());
-            frame.addProperty("in_app", true);
+
+            // TODO: expand this further to allow user specified in-app filters.
+            frame.addProperty("in_app", element.getModuleName() == null || !element.getModuleName().startsWith("java."));
 
             stackFrames.add(frame);
         }
