@@ -1,6 +1,9 @@
 package net.hollowcube.posthog;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -332,8 +335,8 @@ public final class PostHogClientImpl implements PostHogClient {
      * Deduplicates recently sent distinctId/featureFlagKey combinations, kind of.
      *
      * <p>This concept comes from posthog-go in its <a href="https://github.com/PostHog/posthog-go/blob/ec95a60c64b0dd335dafa5c72e8a56c4edc0dbbd/posthog.go#L348">
-     *     handling of sending feature flag called events.</href></a> I'm not very sure what the point is
-     *     especially since the map clear allows two consecutive keys to return true.</p>
+     * handling of sending feature flag called events.</href></a> I'm not very sure what the point is
+     * especially since the map clear allows two consecutive keys to return true.</p>
      *
      * <p>My best guess is that its simply to roughly reduce event volume when evaluating a ton of feature flags.</p>
      *
@@ -392,20 +395,25 @@ public final class PostHogClientImpl implements PostHogClient {
     }
 
     /**
-     * PostHog uses the <a href="https://develop.sentry.dev/sdk/data-model/event-payloads/exception/">Sentry exception
-     * interface</a> for compatibility reasons, so convert to that.
+     * Generates the exception object for PostHog. We generate a resolved exception, unlike some of their clients.
      *
-     * @return the exception interface as json
+     * @see <a href="https://github.com/PostHog/posthog/blob/master/rust/cymbal/src/types/mod.rs#L34">sentry type defs</a>
      */
     private @NotNull JsonObject buildExceptionInterface(@NotNull Throwable exc, int parentId) {
         final JsonObject exception = new JsonObject();
         exception.addProperty("type", exc.getClass().getSimpleName());
-        exception.addProperty("module", exc.getClass().getPackageName());
+        String moduleName = exc.getClass().getPackageName();
+        if (exc.getClass().getModule().isNamed())
+            moduleName = exc.getClass().getModule().getName() + "/" + moduleName;
+        exception.addProperty("module", moduleName);
         exception.addProperty("value", Objects.requireNonNullElse(exc.getMessage(), ""));
 
         JsonObject mechanism = new JsonObject();
         mechanism.addProperty("type", "generic");
+        // We don't currently have a way to indicate this, so just assume yes because the user passed it to us.
         mechanism.addProperty("handled", true);
+        // We include exception_id and parent_id because it is part of the Sentry exception interface to indicate
+        // exception chaining. PostHog does not currently support this as far as I can tell.
         mechanism.addProperty("exception_id", parentId + 1);
         if (parentId != -1) {
             mechanism.addProperty("type", "chained");
@@ -415,7 +423,7 @@ public final class PostHogClientImpl implements PostHogClient {
 
         JsonObject stackTrace = new JsonObject();
         stackTrace.add("frames", getStackFrames(exc.getStackTrace()));
-        stackTrace.addProperty("type", "raw");
+        stackTrace.addProperty("type", "resolved");
         exception.add("stacktrace", stackTrace);
 
         return exception;
@@ -423,6 +431,7 @@ public final class PostHogClientImpl implements PostHogClient {
 
     private @NotNull JsonArray getStackFrames(StackTraceElement[] elements) {
         // Reference: https://github.com/getsentry/sentry-java/blob/9180dc53e73b588db5cb42166e4ee2dc8d3723bc/sentry/src/main/java/io/sentry/SentryStackTraceFactory.java#L30
+        // Better reference: https://github.com/PostHog/posthog/blob/master/rust/cymbal/src/frames/mod.rs#L81
 
         int startFrame = Math.max(elements.length - STACKTRACE_FRAME_LIMIT, 0);
         JsonArray stackFrames = new JsonArray();
@@ -430,32 +439,25 @@ public final class PostHogClientImpl implements PostHogClient {
             final StackTraceElement element = elements[i];
             if (element == null) continue;
 
+            // We generate resolved frames for PostHog.
             final JsonObject frame = new JsonObject();
-            // We lie and tell PostHog that this is a Python exception because they don't actually support
-            // Java yet :) As far as i can tell this is only actually used for syntax highlighting in source
-            // code (which we don't send) so this is probably OK for now.
-            frame.addProperty("platform", "python");
+            frame.addProperty("resolved", true);
+            // We just use a 'random' value for the id because its required
+            frame.addProperty("raw_id", String.valueOf(element.hashCode()));
+
+            frame.addProperty("mangled_name", element.getMethodName());
+            frame.addProperty("resolved_name", element.getMethodName());
+            // Protocol doesn't accept negative line numbers which can be used to indicate unknown line no.
+            if (element.getLineNumber() >= 0)
+                frame.addProperty("line", element.getLineNumber());
             var fileName = element.getClassName();
             if (element.getModuleName() != null)
                 fileName = element.getModuleName() + "/" + fileName;
-            frame.addProperty("filename", fileName);
-            frame.addProperty("abs_path", element.getFileName());
-
-            frame.addProperty("module", element.getClassName());
-            frame.addProperty("function", element.getMethodName());
-
-            // Protocol doesn't accept negative line numbers.
-            // The runtime seem to use -2 as a way to signal a native method
-            if (element.getLineNumber() >= 0)
-                frame.addProperty("lineno", element.getLineNumber());
-
-            // The following is required but we don't have this info in Java
-            frame.add("pre_context", new JsonArray());
-            frame.add("context_line", JsonNull.INSTANCE);
-            frame.add("post_context", new JsonArray());
+            frame.addProperty("source", fileName);
 
             // TODO: expand this further to allow user specified in-app filters.
             frame.addProperty("in_app", element.getModuleName() == null || !element.getModuleName().startsWith("java."));
+            frame.addProperty("lang", "java");
 
             stackFrames.add(frame);
         }
@@ -467,4 +469,5 @@ public final class PostHogClientImpl implements PostHogClient {
             object.addProperty(key, value);
         }
     }
+
 }
