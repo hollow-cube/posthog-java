@@ -3,7 +3,7 @@ plugins {
 
     `maven-publish`
     signing
-    alias(libs.plugins.nexuspublish)
+    alias(libs.plugins.nmcp.aggregation)
 }
 
 group = "dev.hollowcube"
@@ -27,26 +27,22 @@ java {
     withSourcesJar()
     withJavadocJar()
 
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
 
 tasks.test {
     useJUnitPlatform()
 }
 
-nexusPublishing {
-    this.packageGroup.set("dev.hollowcube")
-
-    repositories.sonatype {
-        nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-        snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-
-        if (System.getenv("SONATYPE_USERNAME") != null) {
-            username.set(System.getenv("SONATYPE_USERNAME"))
-            password.set(System.getenv("SONATYPE_PASSWORD"))
-        }
+nmcpAggregation {
+    centralPortal {
+        username = System.getenv("SONATYPE_USERNAME")
+        password = System.getenv("SONATYPE_PASSWORD")
+        publishingType = "AUTOMATIC"
     }
+
+    // Its fine we dont use multiple projects
+    publishAllProjectsProbablyBreakingProjectIsolation()
 }
 
 publishing.publications.create<MavenPublication>("maven") {
