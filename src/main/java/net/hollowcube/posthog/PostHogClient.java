@@ -49,7 +49,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      * Capture an event with the given name for the given distinct ID with no properties.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param event Name of the event. May not be empty.
+     * @param event      Name of the event. May not be empty.
      */
     default void capture(@NotNull String distinctId, @NotNull String event) {
         capture(distinctId, event, Map.of());
@@ -59,7 +59,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      * Capture an event with the given name for the given distinct ID with the provided properties.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param event Name of the event. May not be empty.
+     * @param event      Name of the event. May not be empty.
      * @param properties Event properties
      */
     default void capture(@NotNull String distinctId, @NotNull String event, @NotNull Map<String, Object> properties) {
@@ -72,7 +72,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      * <p>The object must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param event Name of the event. May not be empty.
+     * @param event      Name of the event. May not be empty.
      * @param properties Event object data
      */
     void capture(@NotNull String distinctId, @NotNull String event, @NotNull Object properties);
@@ -80,8 +80,8 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Link the given properties with the person profile of the user (distinct id).
      *
-     * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param distinctId        Unique ID of the target in your database. May not be empty.
+     * @param properties        Properties to set (including overwriting previous values) on the person profile
      * @param propertiesSetOnce Properties to set only if missing on the person profile
      */
     default void identify(@NotNull String distinctId, @Nullable Map<String, Object> properties, @Nullable Map<String, Object> propertiesSetOnce) {
@@ -96,8 +96,8 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      *
      * <p>The objects must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
-     * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param distinctId        Unique ID of the target in your database. May not be empty.
+     * @param properties        Properties to set (including overwriting previous values) on the person profile
      * @param propertiesSetOnce Properties to set only if missing on the person profile
      */
     default void identify(@NotNull String distinctId, @Nullable Object properties, @Nullable Object propertiesSetOnce) {
@@ -136,8 +136,8 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Set the given properties with the person profile of the user (distinct id).
      *
-     * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param distinctId        Unique ID of the target in your database. May not be empty.
+     * @param properties        Properties to set (including overwriting previous values) on the person profile
      * @param propertiesSetOnce Properties to set only if missing on the person profile
      */
     default void set(@NotNull String distinctId, @Nullable Map<String, Object> properties, @Nullable Map<String, Object> propertiesSetOnce) {
@@ -152,8 +152,8 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      *
      * <p>The objects must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
-     * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param distinctId        Unique ID of the target in your database. May not be empty.
+     * @param properties        Properties to set (including overwriting previous values) on the person profile
      * @param propertiesSetOnce Properties to set only if missing on the person profile
      */
     default void set(@NotNull String distinctId, @Nullable Object properties, @Nullable Object propertiesSetOnce) {
@@ -193,7 +193,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      * Alias the given distinct ID to the given alias.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param alias Alias to set for the distinct ID. May not be empty.
+     * @param alias      Alias to set for the distinct ID. May not be empty.
      */
     default void alias(@NotNull String distinctId, @NotNull String alias) {
         capture(distinctId, CREATE_ALIAS, Map.of(
@@ -205,8 +205,8 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Assign the given properties to the given group (type &amp; key).
      *
-     * @param type Group type. Must not be empty
-     * @param key Group key. Must not be empty
+     * @param type       Group type. Must not be empty
+     * @param key        Group key. Must not be empty
      * @param properties Properties to set (including overwriting previous values) on the group
      */
     default void groupIdentify(@NotNull String type, @NotNull String key, @NotNull Map<String, Object> properties) {
@@ -218,8 +218,8 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      *
      * <p>The object must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
-     * @param type Group type. Must not be empty
-     * @param key Group key. Must not be empty
+     * @param type       Group type. Must not be empty
+     * @param key        Group key. Must not be empty
      * @param properties Properties to set (including overwriting previous values) on the group
      */
     default void groupIdentify(@NotNull String type, @NotNull String key, @NotNull Object properties) {
@@ -243,7 +243,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Check if the given feature flag is enabled for the given distinct ID.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
      * @return True if the feature flag is enabled for the given distinct ID, false otherwise
      */
@@ -254,9 +254,9 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Check if the given feature flag is enabled for the given distinct ID with extra context.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
-     * @param context Extra context to pass to the feature flag evaluation
+     * @param context    Extra context to pass to the feature flag evaluation
      * @return True if the feature flag is enabled for the given distinct ID, false otherwise
      */
     default boolean isFeatureEnabled(@NotNull String key, @NotNull String distinctId, @Nullable FeatureFlagContext context) {
@@ -266,7 +266,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Get the feature flag state for the given distinct ID.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
      * @return Feature flag state
      */
@@ -277,9 +277,9 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Get the feature flag state for the given distinct ID with extra context.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
-     * @param context Extra context to pass to the feature flag evaluation
+     * @param context    Extra context to pass to the feature flag evaluation
      * @return Feature flag state
      */
     @NotNull FeatureFlagState getFeatureFlag(@NotNull String key, @NotNull String distinctId, @Nullable FeatureFlagContext context);
@@ -287,7 +287,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Get the feature flag payload for the given distinct ID.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
      * @return Feature flag payload, or null if the feature flag is disabled <i>or</i> has no payload configured.
      */
@@ -298,9 +298,9 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
     /**
      * Get the feature flag payload for the given distinct ID.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
-     * @param context Extra context to pass to the feature flag evaluation
+     * @param context    Extra context to pass to the feature flag evaluation
      * @return Feature flag payload, or null if the feature flag is disabled <i>or</i> has no payload configured.
      */
     default @Nullable String getFeatureFlagPayload(@NotNull String key, @NotNull String distinctId, @Nullable FeatureFlagContext context) {
@@ -321,7 +321,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      * Get all feature flags for the given distinct ID with extra context.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty
-     * @param context Extra context to pass to the feature flag evaluation
+     * @param context    Extra context to pass to the feature flag evaluation
      * @return Feature flag states
      */
     @NotNull FeatureFlagStates getAllFeatureFlags(@NotNull String distinctId, @Nullable FeatureFlagContext context);
@@ -333,6 +333,33 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
      * @throws IllegalStateException if local feature flag evaluation is not enabled.
      */
     void reloadFeatureFlags();
+
+    /**
+     * Blocks until local feature flags have been fetched, or the timeout is reached.
+     *
+     * <p>This is useful during application startup to ensure feature flags are available
+     * before accepting requests. If it fails, local evals are disabled until it re-fetches (and it succeeds).
+     * <p>
+     * Uses the timeout of {@link #loadRemoteFeatureFlags(Duration)}
+     *
+     * @return true if feature flags were successfully loaded, false if the fetch failed or timed out
+     * @throws UnsupportedOperationException if local feature flag evaluation is not enabled
+     */
+    @Blocking
+    boolean loadRemoteFeatureFlags();
+
+    /**
+     * Blocks until local feature flags have been fetched, or the timeout is reached.
+     *
+     * <p>This is useful during application startup to ensure feature flags are available
+     * before accepting requests. If it fails, local evals are disabled until it re-fetches (and it succeeds).
+     *
+     * @param timeout Maximum time to wait for the fetch to complete
+     * @return true if feature flags were successfully loaded, false if the fetch failed or timed out
+     * @throws UnsupportedOperationException if local feature flag evaluation is not enabled
+     */
+    @Blocking
+    boolean loadRemoteFeatureFlags(@NotNull Duration timeout);
 
 
     // Exceptions
@@ -370,6 +397,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
         private boolean sendFeatureFlagEvents = false;
         private Duration featureFlagsPollingInterval = Duration.ofMinutes(5);
         private Duration featureFlagsRequestTimeout = Duration.ofSeconds(3);
+        private Duration blockUntilLocalFlagsLoaded = null;
 
         private BiFunction<Throwable, JsonObject, Boolean> exceptionMiddleware = null;
 
@@ -445,6 +473,24 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
             return this;
         }
 
+        /**
+         * Block during client construction until local feature flags have been fetched.
+         *
+         * <p>This ensures feature flags are available immediately after the client is built.
+         * If the fetch fails or times out, construction still succeeds but feature flag
+         * evaluations will return {@link FeatureFlagState#DISABLED} until the next successful fetch.</p>
+         *
+         * <p>Requires a personal API key to be set via {@link #personalApiKey(String)}.</p>
+         *
+         * @param timeout Maximum time to wait for the fetch to complete
+         * @return this builder
+         */
+        @Contract(pure = true)
+        public @NotNull Builder blockUntilLocalFlagsLoaded(@NotNull Duration timeout) {
+            this.blockUntilLocalFlagsLoaded = Objects.requireNonNull(timeout);
+            return this;
+        }
+
         @Contract(pure = true)
         public @NotNull Builder exceptionMiddleware(@NotNull BiFunction<Throwable, JsonObject, Boolean> exceptionMiddleware) {
             this.exceptionMiddleware = Objects.requireNonNull(exceptionMiddleware);
@@ -470,7 +516,7 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
                     .disableJdkUnsafe()
                     .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                     .create());
-            return new PostHogClientImpl(
+            var client = new PostHogClientImpl(
                     gson,
                     endpoint, projectApiKey, personalApiKey, // API
                     flushInterval, maxBatchSize, defaultEventProperties, // Events
@@ -479,6 +525,10 @@ public sealed interface PostHogClient permits PostHogClientImpl, PostHogClientNo
                     featureFlagsPollingInterval, featureFlagsRequestTimeout,
                     exceptionMiddleware // Exceptions
             );
+            if (blockUntilLocalFlagsLoaded != null) {
+                client.loadRemoteFeatureFlags(blockUntilLocalFlagsLoaded);
+            }
+            return client;
         }
     }
 

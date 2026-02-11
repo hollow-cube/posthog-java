@@ -43,7 +43,7 @@ public final class PostHog {
      * Capture an event with the given name for the given distinct ID with no properties.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param event Name of the event. May not be empty.
+     * @param event      Name of the event. May not be empty.
      */
     public static void capture(@NotNull String distinctId, @NotNull String event) {
         getClient().capture(distinctId, event);
@@ -53,7 +53,7 @@ public final class PostHog {
      * Capture an event with the given name for the given distinct ID with the provided properties.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param event Name of the event. May not be empty.
+     * @param event      Name of the event. May not be empty.
      * @param properties Event properties
      */
     public static void capture(@NotNull String distinctId, @NotNull String event, @NotNull Map<String, Object> properties) {
@@ -66,7 +66,7 @@ public final class PostHog {
      * <p>The object must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param event Name of the event. May not be empty.
+     * @param event      Name of the event. May not be empty.
      * @param properties Event object data
      */
     public static void capture(@NotNull String distinctId, @NotNull String event, @NotNull Object properties) {
@@ -76,8 +76,8 @@ public final class PostHog {
     /**
      * Link the given properties with the person profile of the user (distinct id).
      *
-     * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param distinctId        Unique ID of the target in your database. May not be empty.
+     * @param properties        Properties to set (including overwriting previous values) on the person profile
      * @param propertiesSetOnce Properties to set only if missing on the person profile
      */
     public static void identify(@NotNull String distinctId, @Nullable Map<String, Object> properties, @Nullable Map<String, Object> propertiesSetOnce) {
@@ -89,8 +89,8 @@ public final class PostHog {
      *
      * <p>The objects must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
-     * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param distinctId        Unique ID of the target in your database. May not be empty.
+     * @param properties        Properties to set (including overwriting previous values) on the person profile
      * @param propertiesSetOnce Properties to set only if missing on the person profile
      */
     public static void identify(@NotNull String distinctId, @Nullable Object properties, @Nullable Object propertiesSetOnce) {
@@ -122,8 +122,8 @@ public final class PostHog {
     /**
      * Set the given properties with the person profile of the user (distinct id).
      *
-     * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param distinctId        Unique ID of the target in your database. May not be empty.
+     * @param properties        Properties to set (including overwriting previous values) on the person profile
      * @param propertiesSetOnce Properties to set only if missing on the person profile
      */
     public static void set(@NotNull String distinctId, @Nullable Map<String, Object> properties, @Nullable Map<String, Object> propertiesSetOnce) {
@@ -135,8 +135,8 @@ public final class PostHog {
      *
      * <p>The objects must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
-     * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param properties Properties to set (including overwriting previous values) on the person profile
+     * @param distinctId        Unique ID of the target in your database. May not be empty.
+     * @param properties        Properties to set (including overwriting previous values) on the person profile
      * @param propertiesSetOnce Properties to set only if missing on the person profile
      */
     public static void set(@NotNull String distinctId, @Nullable Object properties, @Nullable Object propertiesSetOnce) {
@@ -169,7 +169,7 @@ public final class PostHog {
      * Alias the given distinct ID to the given alias.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty.
-     * @param alias Alias to set for the distinct ID. May not be empty.
+     * @param alias      Alias to set for the distinct ID. May not be empty.
      */
     public static void alias(@NotNull String distinctId, @NotNull String alias) {
         getClient().alias(distinctId, alias);
@@ -178,8 +178,8 @@ public final class PostHog {
     /**
      * Assign the given properties to the given group (type &amp; key).
      *
-     * @param type Group type. Must not be empty
-     * @param key Group key. Must not be empty
+     * @param type       Group type. Must not be empty
+     * @param key        Group key. Must not be empty
      * @param properties Properties to set (including overwriting previous values) on the group
      */
     public static void groupIdentify(@NotNull String type, @NotNull String key, @NotNull Map<String, Object> properties) {
@@ -191,8 +191,8 @@ public final class PostHog {
      *
      * <p>The object must be serializable to a JSON object via Gson (not primitive or array)</p>
      *
-     * @param type Group type. Must not be empty
-     * @param key Group key. Must not be empty
+     * @param type       Group type. Must not be empty
+     * @param key        Group key. Must not be empty
      * @param properties Properties to set (including overwriting previous values) on the group
      */
     public static void groupIdentify(@NotNull String type, @NotNull String key, @NotNull Object properties) {
@@ -212,7 +212,7 @@ public final class PostHog {
     /**
      * Check if the given feature flag is enabled for the given distinct ID.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
      * @return True if the feature flag is enabled for the given distinct ID, false otherwise
      */
@@ -223,9 +223,9 @@ public final class PostHog {
     /**
      * Check if the given feature flag is enabled for the given distinct ID with extra context.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
-     * @param context Extra context to pass to the feature flag evaluation
+     * @param context    Extra context to pass to the feature flag evaluation
      * @return True if the feature flag is enabled for the given distinct ID, false otherwise
      */
     public static boolean isFeatureEnabled(@NotNull String key, @NotNull String distinctId, @Nullable FeatureFlagContext context) {
@@ -235,7 +235,7 @@ public final class PostHog {
     /**
      * Get the feature flag state for the given distinct ID.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
      * @return Feature flag state
      */
@@ -246,9 +246,9 @@ public final class PostHog {
     /**
      * Get the feature flag state for the given distinct ID with extra context.
      *
-     * @param key Feature flag key
+     * @param key        Feature flag key
      * @param distinctId Unique ID of the target in your database. May not be empty
-     * @param context Extra context to pass to the feature flag evaluation
+     * @param context    Extra context to pass to the feature flag evaluation
      * @return Feature flag state
      */
     public static @NotNull FeatureFlagState getFeatureFlag(@NotNull String key, @NotNull String distinctId, @Nullable FeatureFlagContext context) {
@@ -271,7 +271,7 @@ public final class PostHog {
      * Get all feature flags for the given distinct ID with extra context.
      *
      * @param distinctId Unique ID of the target in your database. May not be empty
-     * @param context Extra context to pass to the feature flag evaluation
+     * @param context    Extra context to pass to the feature flag evaluation
      * @return Feature flag states
      */
     public static @NotNull FeatureFlagStates getAllFeatureFlags(@NotNull String distinctId, @Nullable FeatureFlagContext context) {
@@ -286,6 +286,21 @@ public final class PostHog {
      */
     public static void reloadFeatureFlags() {
         getClient().reloadFeatureFlags();
+    }
+
+    /**
+     * Blocks until local feature flags have been fetched, or the timeout is reached.
+     *
+     * <p>This is useful during application startup to ensure feature flags are available
+     * before accepting requests. If it fails, local evals are disabled until it re-fetches (and it succeeds).
+     *
+     * @param timeout Maximum time to wait for the fetch to complete
+     * @return true if feature flags were successfully loaded, false if the fetch failed or timed out
+     * @throws UnsupportedOperationException if local feature flag evaluation is not enabled
+     */
+    @Blocking
+    public static boolean loadRemoteFeatureFlags(@NotNull Duration timeout) {
+        return getClient().loadRemoteFeatureFlags(timeout);
     }
 
     // Exceptions

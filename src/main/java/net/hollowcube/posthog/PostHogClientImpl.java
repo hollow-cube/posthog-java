@@ -50,6 +50,7 @@ public final class PostHogClientImpl implements PostHogClient {
 
     private Map<String, FeatureFlagsResponse.Flag> featureFlags = null; // Null until first fetch
     private final Map<String, Object> recentlyCapturedFeatureFlags = new ConcurrentHashMap<>();
+    private volatile boolean warnedAboutMissingFlags = false;
     private final boolean allowRemoteFeatureFlagEvaluation;
     private final boolean sendFeatureFlagEvents;
     private final Duration featureFlagsRequestTimeout;
@@ -202,6 +203,18 @@ public final class PostHogClientImpl implements PostHogClient {
             }
         }
 
+        // This occurs when local flags are not loaded and remote eval is disabled, so we return disabled
+        // If a client wants, they can block until local values are loaded with PostHogClient#loadRemoteFeatureFlags
+        if (result == null) {
+            if (!warnedAboutMissingFlags) {
+                warnedAboutMissingFlags = true;
+                log.warn("Local feature flags not yet loaded and remote evaluation is disabled. " +
+                        "Returning DISABLED for all flags until loaded. " +
+                        "Use loadRemoteFeatureFlags() or blockUntilLocalFlagsLoaded() to avoid this.");
+            }
+            return FeatureFlagState.DISABLED;
+        }
+
         // Send feature flag called event if configured to do so.
         final boolean sendCalledEvent = featureFlagContext.sendFeatureFlagEvents() != null
                 ? featureFlagContext.sendFeatureFlagEvents()
@@ -271,18 +284,26 @@ public final class PostHogClientImpl implements PostHogClient {
     }
 
     @Blocking
-    private void loadRemoteFeatureFlags() {
-        if (this.personalApiKey == null) return; // Sanity check
+    public boolean loadRemoteFeatureFlags() {
+        return this.loadRemoteFeatureFlags(featureFlagsRequestTimeout);
+    }
+
+    @Blocking
+    public boolean loadRemoteFeatureFlags(@NotNull Duration timeout) {
+        if (this.personalApiKey == null) {
+            throw new UnsupportedOperationException("Local feature flag evaluation is not enabled (no personal API key)");
+        }
 
         final HttpRequest req = HttpRequest.newBuilder(URI.create(String.format("%s/api/feature_flag/local_evaluation", endpoint)))
                 .header("Authorization", String.format("Bearer %s", this.personalApiKey))
                 .header("User-Agent", USER_AGENT)
-                .timeout(featureFlagsRequestTimeout)
+                .timeout(timeout)
                 .build();
         try {
             final HttpResponse<String> res = this.httpClient.send(req, HttpResponse.BodyHandlers.ofString());
             if (res.statusCode() != 200) {
                 log.error("unexpected response from /api/feature_flag/local_evaluation ({}): {}", res.statusCode(), res.body());
+                return false;
             }
 
             final FeatureFlagsResponse resBody = this.gson.fromJson(res.body(), FeatureFlagsResponse.class);
@@ -291,13 +312,17 @@ public final class PostHogClientImpl implements PostHogClient {
                 newFeatureFlags.put(flag.key(), flag);
             }
             this.featureFlags = Map.copyOf(newFeatureFlags);
+            return true;
         } catch (InterruptedException ignored) {
             // Do nothing just exit
+            return false;
         } catch (HttpTimeoutException e) {
             log.warn("timed out making /api/feature_flag/local_evaluation request", e);
+            return false;
         } catch (Exception e) {
             // Catch everything because we do not want the timer itself to stop running.
             log.error("failed to make /api/feature_flag/local_evaluation request", e);
+            return false;
         }
     }
 

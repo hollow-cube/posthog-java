@@ -38,6 +38,16 @@ final class PostHogClientNoop implements PostHogClient {
     }
 
     @Override
+    public boolean loadRemoteFeatureFlags() {
+        return true;
+    }
+
+    @Override
+    public boolean loadRemoteFeatureFlags(@NotNull Duration timeout) {
+        return true;
+    }
+
+    @Override
     public void captureException(@NotNull Throwable throwable, @Nullable String distinctId, @Nullable Object properties) {
         
     }
